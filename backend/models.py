@@ -19,7 +19,7 @@ def setup_db(app, database_path=database_path):
     # db.create_all()
 
 
-QUESTIONS_PER_PAGE = 8
+QUESTIONS_PER_PAGE = 10
 
 
 def paginate_questions(request, questions):
