@@ -1,23 +1,37 @@
-import os
-from sqlalchemy import Column, String, Integer, create_engine
 from flask_sqlalchemy import SQLAlchemy
-import json
 
-database_name = "trivia"
-database_path = "postgres://{}/{}".format('localhost:5432', database_name)
+user = "postgres"
+password = "123"
+host = "localhost"
+database_name = "trivia_test"
+
+database_path = "postgresql://{}:{}@{}/{}".format(
+    user, password, host, database_name)
 
 db = SQLAlchemy()
 
-'''
-setup_db(app)
-    binds a flask application and a SQLAlchemy service
-'''
+
 def setup_db(app, database_path=database_path):
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_path
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_path
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.app = app
     db.init_app(app)
-    db.create_all()
+    # db.create_all()
+
+
+QUESTIONS_PER_PAGE = 8
+
+
+def paginate_questions(request, questions):
+    # adding pagination
+    # if arg object page not found assign default to 1
+    page = request.args.get('page', 1, type=int)
+    start = (page-1)*QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+
+    formatted_questions = [question.format() for question in questions]
+    return formatted_questions[start:end]
+
 
 '''
 Question
@@ -26,17 +40,11 @@ Question
 class Question(db.Model):  
   __tablename__ = 'questions'
 
-  id = Column(Integer, primary_key=True)
-  question = Column(String)
-  answer = Column(String)
-  category = Column(String)
-  difficulty = Column(Integer)
-
-  def __init__(self, question, answer, category, difficulty):
-    self.question = question
-    self.answer = answer
-    self.category = category
-    self.difficulty = difficulty
+  id=db.Column(db.Integer,primary_key=True)
+  question = db.Column(db.String())
+  answer = db.Column(db.String())
+  category = db.Column(db.String())
+  difficulty = db.Column(db.String())
 
   def insert(self):
     db.session.add(self)
@@ -65,11 +73,8 @@ Category
 class Category(db.Model):  
   __tablename__ = 'categories'
 
-  id = Column(Integer, primary_key=True)
-  type = Column(String)
-
-  def __init__(self, type):
-    self.type = type
+  id = db.Column(db.Integer, primary_key=True)
+  type = db.Column(db.String())
 
   def format(self):
     return {
